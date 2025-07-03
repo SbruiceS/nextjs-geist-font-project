@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agriml-deployment
+  labels:
+    app: agriml
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: agriml
+  template:
+    metadata:
+      labels:
+        app: agriml
+    spec:
+      containers:
+      - name: rust-edge
+        image: agriml/rust_edge:latest
+        ports:
+        - containerPort: 50051
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 3000
+          runAsNonRoot: true
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+      - name: cpp-weather
+        image: agriml/cpp_weather:latest
+        ports:
+        - containerPort: 50052
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 3000
+          runAsNonRoot: true
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+      - name: python-ai
+        image: agriml/python_ai:latest
+        ports:
+        - containerPort: 50053
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 3000
+          runAsNonRoot: true
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+      securityContext:
+        fsGroup: 2000
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 3000
+      restartPolicy: Always

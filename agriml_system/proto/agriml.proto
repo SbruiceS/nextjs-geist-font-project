@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package agriml;
+
+// Soil moisture data message
+message SoilMoistureData {
+  string device_id = 1;
+  double moisture_level = 2;
+  int64 timestamp = 3;
+  double temperature = 4; // Added temperature sensor data
+  double ph_level = 5;    // Added soil pH level
+}
+
+// Weather data message
+message WeatherData {
+  double temperature = 1;
+  double humidity = 2;
+  double rainfall = 3;
+  double wind_speed = 4;  // Added wind speed
+  int64 timestamp = 5;
+}
+
+// Decision message from weather processing
+message WeatherDecision {
+  string decision = 1;
+  int64 timestamp = 2;
+  string recommendation = 3; // Added detailed recommendation
+}
+
+// Crop disease detection request
+message CropImage {
+  bytes image_data = 1;
+  string crop_type = 2; // Added crop type for better prediction
+}
+
+// Crop disease detection response
+message DiseasePrediction {
+  string disease_name = 1;
+  float confidence = 2;
+  string treatment = 3; // Added treatment recommendation
+}
+
+// Soil moisture data streaming service
+service SoilMoistureService {
+  rpc StreamSoilMoistureData (SoilMoistureData) returns (StreamResponse);
+}
+
+// Weather data processing service
+service WeatherProcessingService {
+  rpc ProcessWeatherData (WeatherData) returns (WeatherDecision);
+}
+
+// Crop disease detection service
+service CropDiseaseDetectionService {
+  rpc DetectDisease (CropImage) returns (DiseasePrediction);
+}
+
+// Generic stream response
+message StreamResponse {
+  string status = 1;
+}

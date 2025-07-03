@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      docker:
+        image: docker:19.03.12
+        options: --privileged
+        ports:
+          - 2375:2375
+        env:
+          DOCKER_TLS_CERTDIR: ""
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r agrim_system/python_ai/requirements.txt
+        pip install pytest
+
+    - name: Run Python tests
+      run: |
+        pytest agrim_system/tests/
+
+    - name: Set up Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+
+    - name: Build Rust project
+      run: |
+        cd agrim_system/rust_edge
+        cargo build --release
+
+    - name: Run Rust tests
+      run: |
+        cd agrim_system/rust_edge
+        cargo test -- --nocapture
+
+    - name: Build C++ project
+      run: |
+        cd agrim_system/cpp_weather
+        mkdir -p build
+        cd build
+        cmake ..
+        make
+
+    - name: Run C++ tests
+      run: |
+        cd agrim_system/cpp_weather/build
+        ./weather_processing_test
